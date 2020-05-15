@@ -1,0 +1,9 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: postcovid
+  jpa:
+    hibernate:
+      ddl-auto: update

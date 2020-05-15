@@ -1,0 +1,9 @@
+*.iml
+.idea/
+back/target/
+ui/package-lock.json
+ui/target/
+ui/node_modules/
+data/
+ui/.project
+ui/.settings/
