@@ -25,11 +25,11 @@ public class UserInfoResource {
     public UserInfo userInfo() {
 
         return UserInfo.builder()
-                .firstName("Fabrice")
-                .lastName("Gazin - Norris")
-                .login("gazin")
+                .firstName("Chuck")
+                .lastName("Norris")
+                .login("norris")
                 .organization("ChuckNorris Inc")
-                .role(getRole(userRoleRepository.getAllByUser("gazin")))
+                .role(getRole(userRoleRepository.getAllByUser("norris")))
                 .build();
     }
 

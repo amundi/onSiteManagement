@@ -18,9 +18,9 @@ public class AppInitializer {
     @PostConstruct
     private void init() {
         if(userRoleRepository.findAll().isEmpty()) {
-            log.info("Creating default admin user: gazin");
+            log.info("Creating default admin user: norris");
             UserRole userRole = new UserRole();
-            userRole.setUser("gazin");
+            userRole.setUser("norris");
             userRole.setRole("admin");
             userRoleRepository.save(userRole);
         }
