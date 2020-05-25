@@ -20,5 +20,17 @@ Application based on Spring Boot + Vue.js, packaged in a single jar using Maven.
 
 
 
-- [x] **mvn clean install** build the full packaged jar, including the ui part.
+- [x] **mvn clean install** build the full packaged war, including the ui part.
 - [x] Vue cli is used on the project: node js server will be started on **port 9000**, and proxify api calls to the backend part on **port 8080**.
+
+
+# Installation
+
+
+Installation can be done following theses steps: 
+- [x] use **mvn clean install** to create the war file. If you want to use an embedded H2 database, activate Maven 'local' profile. Otherwise, add to pom.xml the driver you'll use (Amundi uses MariaDB for test and production environments).
+- [x] even if the packaging is a war file, you can start the application using:
+
+
+`java -jar -Dspring.profiles.active=local postCovid.war`
+
