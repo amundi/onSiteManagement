@@ -24,7 +24,7 @@ Application based on Spring Boot + Vue.js, packaged in a single jar using Maven.
 - [x] Vue cli is used on the project: node js server will be started on **port 9000**, and proxify api calls to the backend part on **port 8080**.
 
 
-# Installation
+# Getting started
 
 
 Installation can be done following theses steps: 
