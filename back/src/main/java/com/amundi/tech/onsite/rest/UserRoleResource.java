@@ -38,6 +38,19 @@ public class UserRoleResource {
         if (!currentUserIsAdmin(userRoles.getUserRoles())) {
             throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, CURRENT_USER_CANNOT_REMOVE_ADMIN_ROLE);
         }
+
+        List<UserRole> currents = userRoleRepository.findAll();
+        for(UserRole current: currents) {
+            for(UserRole newUserRole: userRoles.getUserRoles()) {
+                if(current.getUser().equals(newUserRole.getUser())) {
+                    newUserRole.setGivenName(current.getGivenName());
+                    newUserRole.setLastName(current.getLastName());
+                    newUserRole.setDepartment(current.getDepartment());
+                    break;
+                }
+            }
+        }
+
         userRoleRepository.deleteAll();
         return UserRoles.builder().userRoles(userRoleRepository.saveAll(userRoles.getUserRoles())).build();
     }
