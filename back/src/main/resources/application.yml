@@ -2,8 +2,9 @@ server:
   port: ${PORT:8080}
 
 spring:
+  profiles: local
   application:
-    name: postcovid
+    name: onsitemanagement
   jpa:
     hibernate:
       ddl-auto: update
