@@ -494,7 +494,9 @@ export default {
     },
     saveBookings() {
       let vm = this;
-      if (vm.getSettingProperty("manageArrivals") && !vm.arrival) {
+      if(vm.getSettingProperty("manageOnSites") && !vm.onSite && !vm.arrival) {
+        store.commit("SET_INFO", "Error: missing presence information...");
+      } else if (vm.getSettingProperty("manageArrivals") && !vm.arrival) {
         store.commit("SET_INFO", "Error: missing arrival info");
       } else if (vm.getSettingProperty("manageDepartures") && !vm.departure) {
         store.commit("SET_INFO", "Error: missing departure info");

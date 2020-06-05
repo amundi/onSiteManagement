@@ -21,9 +21,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
-import static com.amundi.tech.onsite.exception.AppException.EMPTY_SITE;
-import static com.amundi.tech.onsite.exception.AppException.RESTAURANT_DOESNT_EXIST;
-
 @Slf4j
 @RestController
 @RequestMapping("/api/restaurant")
@@ -58,7 +55,7 @@ public class RestaurantResource {
     public Restaurant byId(@PathVariable("id") long restaurantId) {
         Optional<RestaurantDefinition> definitionOptional = restaurantDefinitionRepository.findById(restaurantId);
         if (!definitionOptional.isPresent()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format(RESTAURANT_DOESNT_EXIST, restaurantId));
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format(AppException.RESTAURANT_DOESNT_EXIST, restaurantId));
         }
         RestaurantDefinition definition = definitionOptional.get();
         Restaurant restaurant = Restaurant.builder()
@@ -74,7 +71,7 @@ public class RestaurantResource {
     @PostMapping(path = "/", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Restaurant save(@RequestBody Restaurant restaurant) {
         if (restaurant == null || restaurant.getDefinition() == null || restaurant.getDefinition().getName() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, EMPTY_SITE);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, AppException.EMPTY_SITE);
         }
         RestaurantDefinition d = restaurant.getDefinition();
 

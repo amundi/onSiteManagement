@@ -190,6 +190,9 @@ export default {
       .ag-cell {
         font-size: 0.7rem;
         text-align: left;
+        &:not(.ag-cell-inline-editing) {
+          padding: 0 0 0 10px;
+        }
       }
       .ag-row {
         border-top-color: transparent;

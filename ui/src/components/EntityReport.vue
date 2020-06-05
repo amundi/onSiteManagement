@@ -1,10 +1,5 @@
 <template>
-  <div
-    ref="main"
-    class="graph entity flex justify-center"
-    :class="[hue]"
-    :id="name + '-entity'"
-  ></div>
+  <div ref="main" class="graph entity flex justify-center" :class="[hue]" :id="name + '-entity'"></div>
 </template>
 
 <script>
@@ -60,7 +55,10 @@ export default {
           .attr("width", mainWidth)
           .attr("height", mainHeight)
           .append("g")
-          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+          .attr(
+            "transform",
+            "translate(" + margin.left + "," + margin.top + ")"
+          );
 
         // Add axis ------------------------------------------------------
         vm.x = d3
@@ -74,30 +72,6 @@ export default {
           .scaleLinear()
           .domain([0, max])
           .range([h, 5]);
-
-        vm.svg
-          .append("line")
-          .attr("class", "baseline")
-          .attr("x1", vm.x(0))
-          .attr("y1", h)
-          .attr("x2", width)
-          .attr("y2", h);
-
-        vm.svg
-          .append("text")
-          .attr("x", 0)
-          .attr("y", 5)
-          .attr("dy", ".35em")
-          .attr("class", "max")
-          .text(max);
-
-        vm.svg
-          .append("line")
-          .attr("class", "maxline")
-          .attr("x1", vm.x(10))
-          .attr("y1", 5)
-          .attr("x2", width)
-          .attr("y2", 5);
 
         let index = 0;
         for (let date of dates) {
@@ -116,45 +90,99 @@ export default {
             if (date == val.date) {
               vm.localIndex = index;
 
+              // Presence ------------------------------------
+              if (val["onSite"] && val["onSite_u"] && val["onSite"] > 0) {
+                vm.addRect(
+                  0,
+                  h,
+                  3 * unit,
+                  (val["onSite_u"] > val["onSite"]
+                    ? 1
+                    : val["onSite_u"] / val["onSite"]) * max,
+                  "on usage"
+                );
+                vm.addRect(
+                  2,
+                  h,
+                  3 * unit,
+                  (val["onSite_u"] > val["onSite"]
+                    ? val["onSite"] / val["onSite_u"]
+                    : 1) * max,
+                  "on def"
+                );
+              }
+
+              vm.svg
+                .append("line")
+                .attr("class", "sepline")
+                .attr("x1", vm.x(6 + vm.localIndex))
+                .attr("y1", 0)
+                .attr("x2", vm.x(6 + vm.localIndex))
+                .attr("y2", h);
+
               // Arrivals ------------------------------------
-              vm.addRect(2, h, 3 * unit, val["h700_u"], "arr usage");
-              vm.addRect(4, h, 3 * unit, val["h700"], "arr def");
-              vm.addRect(6, h, 3 * unit, val["h730_u"], "arr usage");
-              vm.addRect(8, h, 3 * unit, val["h730"], "arr def");
-              vm.addRect(10, h, 3 * unit, val["h800_u"], "arr usage");
-              vm.addRect(12, h, 3 * unit, val["h800"], "arr def");
-              vm.addRect(14, h, 3 * unit, val["h830_u"], "arr usage");
-              vm.addRect(16, h, 3 * unit, val["h830"], "arr def");
-              vm.addRect(18, h, 3 * unit, val["h900_u"], "arr usage");
-              vm.addRect(20, h, 3 * unit, val["h900"], "arr def");
-              vm.addRect(22, h, 3 * unit, val["h930_u"], "arr usage");
-              vm.addRect(24, h, 3 * unit, val["h930"], "arr def");
-              vm.addRect(26, h, 3 * unit, val["h1000_u"], "arr usage");
-              vm.addRect(28, h, 3 * unit, val["h1000"], "arr def");
+              vm.addRect(8, h, 3 * unit, val["h700_u"], "arr usage");
+              vm.addRect(10, h, 3 * unit, val["h700"], "arr def");
+              vm.addRect(12, h, 3 * unit, val["h730_u"], "arr usage");
+              vm.addRect(14, h, 3 * unit, val["h730"], "arr def");
+              vm.addRect(16, h, 3 * unit, val["h800_u"], "arr usage");
+              vm.addRect(18, h, 3 * unit, val["h800"], "arr def");
+              vm.addRect(20, h, 3 * unit, val["h830_u"], "arr usage");
+              vm.addRect(22, h, 3 * unit, val["h830"], "arr def");
+              vm.addRect(24, h, 3 * unit, val["h900_u"], "arr usage");
+              vm.addRect(26, h, 3 * unit, val["h900"], "arr def");
+              vm.addRect(28, h, 3 * unit, val["h930_u"], "arr usage");
+              vm.addRect(30, h, 3 * unit, val["h930"], "arr def");
+              vm.addRect(32, h, 3 * unit, val["h1000_u"], "arr usage");
+              vm.addRect(34, h, 3 * unit, val["h1000"], "arr def");
+
+              vm.svg
+                .append("line")
+                .attr("class", "sepline")
+                .attr("x1", vm.x(38 + vm.localIndex))
+                .attr("y1", 0)
+                .attr("x2", vm.x(38 + vm.localIndex))
+                .attr("y2", h);
 
               // Restaurants -----------------------------------
-              vm.addRect(36, h, 3 * unit, val["h1130_u"], "rest usage");
-              vm.addRect(38, h, 3 * unit, val["h1130"], "rest def");
-              vm.addRect(40, h, 3 * unit, val["h1200_u"], "rest usage");
-              vm.addRect(42, h, 3 * unit, val["h1200"], "rest def");
-              vm.addRect(44, h, 3 * unit, val["h1230_u"], "rest usage");
-              vm.addRect(46, h, 3 * unit, val["h1230"], "rest def");
-              vm.addRect(48, h, 3 * unit, val["h1300_u"], "rest usage");
-              vm.addRect(50, h, 3 * unit, val["h1300"], "rest def");
-              vm.addRect(52, h, 3 * unit, val["h1330_u"], "rest usage");
-              vm.addRect(54, h, 3 * unit, val["h1330"], "rest def");
+              vm.addRect(40, h, 3 * unit, val["h1130_u"], "rest usage");
+              vm.addRect(42, h, 3 * unit, val["h1130"], "rest def");
+              vm.addRect(44, h, 3 * unit, val["h1200_u"], "rest usage");
+              vm.addRect(46, h, 3 * unit, val["h1200"], "rest def");
+              vm.addRect(48, h, 3 * unit, val["h1230_u"], "rest usage");
+              vm.addRect(50, h, 3 * unit, val["h1230"], "rest def");
+              vm.addRect(52, h, 3 * unit, val["h1300_u"], "rest usage");
+              vm.addRect(54, h, 3 * unit, val["h1300"], "rest def");
+              vm.addRect(56, h, 3 * unit, val["h1330_u"], "rest usage");
+              vm.addRect(58, h, 3 * unit, val["h1330"], "rest def");
+
+              vm.svg
+                .append("line")
+                .attr("class", "sepline")
+                .attr("x1", vm.x(62 + vm.localIndex))
+                .attr("y1", 0)
+                .attr("x2", vm.x(62 + vm.localIndex))
+                .attr("y2", h);
 
               // Departures -----------------------------------
-              vm.addRect(62, h, 3 * unit, val["h1700_u"], "dep usage");
-              vm.addRect(64, h, 3 * unit, val["h1700"], "dep def");
-              vm.addRect(66, h, 3 * unit, val["h1730_u"], "dep usage");
-              vm.addRect(68, h, 3 * unit, val["h1730"], "dep def");
-              vm.addRect(70, h, 3 * unit, val["h1800_u"], "dep usage");
-              vm.addRect(72, h, 3 * unit, val["h1800"], "dep def");
-              vm.addRect(74, h, 3 * unit, val["h1830_u"], "dep usage");
-              vm.addRect(76, h, 3 * unit, val["h1830"], "dep def");
-              vm.addRect(78, h, 3 * unit, val["h1900_u"], "dep usage");
-              vm.addRect(80, h, 3 * unit, val["h1900"], "dep def");
+              vm.addRect(64, h, 3 * unit, val["h1700_u"], "dep usage");
+              vm.addRect(66, h, 3 * unit, val["h1700"], "dep def");
+              vm.addRect(68, h, 3 * unit, val["h1730_u"], "dep usage");
+              vm.addRect(70, h, 3 * unit, val["h1730"], "dep def");
+              vm.addRect(72, h, 3 * unit, val["h1800_u"], "dep usage");
+              vm.addRect(74, h, 3 * unit, val["h1800"], "dep def");
+              vm.addRect(76, h, 3 * unit, val["h1830_u"], "dep usage");
+              vm.addRect(78, h, 3 * unit, val["h1830"], "dep def");
+              vm.addRect(80, h, 3 * unit, val["h1900_u"], "dep usage");
+              vm.addRect(82, h, 3 * unit, val["h1900"], "dep def");
+
+              vm.svg
+                .append("line")
+                .attr("class", "sepline")
+                .attr("x1", vm.x(86 + vm.localIndex))
+                .attr("y1", 0)
+                .attr("x2", vm.x(86 + vm.localIndex))
+                .attr("y2", h);
 
               // Parkings -------------------------------------
               vm.addRect(88, h, 3 * unit, val["car_u"], "park usage");
@@ -173,6 +201,30 @@ export default {
           }
           index += 100;
         }
+
+        vm.svg
+          .append("line")
+          .attr("class", "baseline")
+          .attr("x1", vm.x(0))
+          .attr("y1", h)
+          .attr("x2", width)
+          .attr("y2", h);
+
+        vm.svg
+          .append("text")
+          .attr("x", -10)
+          .attr("y", 5)
+          .attr("dy", ".35em")
+          .attr("class", "max")
+          .text(max);
+
+        vm.svg
+          .append("line")
+          .attr("class", "maxline")
+          .attr("x1", vm.x(10))
+          .attr("y1", 5)
+          .attr("x2", width)
+          .attr("y2", 5);
       }
     },
     addRect(xVal, yVal, w, h, cls) {
@@ -244,6 +296,9 @@ export default {
       .maxline {
         stroke: #afb6bb;
       }
+      .sepline {
+        stroke: #213d50;
+      }
       .date,
       .max {
         fill: #b4c9e2;
@@ -262,6 +317,9 @@ export default {
       .maxline {
         stroke: #92b6d4;
       }
+      .sepline {
+        stroke: #cce1e6;
+      }
       .date,
       .max {
         fill: #546d8a;
@@ -276,14 +334,18 @@ export default {
     .def {
       opacity: 0.2;
     }
+    .on {
+      // onsite
+      fill: #55afde;
+    }
     .arr {
       // arrival
-      fill: red;
+      fill: #2e6a8a;
     }
 
     .rest {
       // arrival
-      fill: greenyellow;
+      fill: #86d60b;
     }
     .dep {
       // arrival

@@ -276,13 +276,12 @@ export default {
           background-color: white;
           &.selected {
             //background-color: #bee3f3;
-            background-color: #ffdf47;
-            box-shadow: 0px 0px 8px 1px #ffdf47;
+            background-color: #d6f2d8;
+            // box-shadow: 0px 0px 8px 1px #b2efc2;
           }
 
           &:hover {
             background-color: #47d4ff;
-            color: white;
           }
         }
         .currentUserUsage {
@@ -317,8 +316,8 @@ export default {
         &:not(.notOpen):not(.beforeNow):not(.notADay) {
           background-color: #242424;
           &.selected {
-            background-color: #a78e16;
-            box-shadow: 0px 0px 8px 1px #a78e16;
+            background-color: #242f23;
+            // box-shadow: 0px 0px 8px 1px #3b5839;
           }
 
           &:hover {

@@ -21,9 +21,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
-import static com.amundi.tech.onsite.exception.AppException.EMPTY_SITE;
-import static com.amundi.tech.onsite.exception.AppException.SITE_DOESNT_EXIST;
-
 @Slf4j
 @RestController
 @RequestMapping("/api/site")
@@ -58,7 +55,7 @@ public class SiteResource {
     public Site byId(@PathVariable("id") long siteId) {
         Optional<SiteDefinition> definitionOptional = siteDefinitionRepository.findById(siteId);
         if (!definitionOptional.isPresent()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format(SITE_DOESNT_EXIST, siteId));
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format(AppException.SITE_DOESNT_EXIST, siteId));
         }
         SiteDefinition definition = definitionOptional.get();
         Site site = Site.builder()
@@ -74,7 +71,7 @@ public class SiteResource {
     @PostMapping(path = "/", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Site save(@RequestBody Site site) {
         if (site == null || site.getDefinition() == null || site.getDefinition().getName() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, EMPTY_SITE);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, AppException.EMPTY_SITE);
         }
         SiteDefinition d = site.getDefinition();
 

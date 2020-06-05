@@ -5,8 +5,8 @@
         <div class="main w-full">
           <div class="title flex justify-between">
             <div>
-              <span class="post">#POST</span>
-              <span class="covid">COVID</span>
+              <span class="onsite">#OnSite</span>
+              <span class="management">Management</span>
             </div>
             <div class="arrow-right"></div>
           </div>
@@ -144,7 +144,7 @@ export default {
       .no-info {
         .main {
           background-color: #ececec;
-          .post {
+          .onsite {
             color: #00b6ed;
           }
           .arrow-right {
@@ -195,7 +195,7 @@ export default {
           text-align: left;
           font-size: 1.5rem;
           letter-spacing: -2px;
-          .post {
+          .onsite {
             font-weight: bold;
           }
         }

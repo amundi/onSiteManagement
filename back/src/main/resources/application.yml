@@ -2,7 +2,6 @@ server:
   port: ${PORT:8080}
 
 spring:
-  profiles: local
   application:
     name: onsitemanagement
   jpa:

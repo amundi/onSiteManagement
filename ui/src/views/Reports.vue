@@ -16,12 +16,12 @@
           </div>
         </div>
         <div class="comments">
-          <div class="comment text-right">
-            * red lines represent arrival time slots, green lines lunch time slots,
-          </div>
-          <div class="comment text-right">
-            orange lines departures time slots, and purple lines parkings.
-          </div>
+          <div
+            class="comment text-right"
+          >* red lines represent arrival time slots, green lines lunch time slots,</div>
+          <div
+            class="comment text-right"
+          >orange lines departures time slots, and purple lines parkings.</div>
         </div>
       </div>
     </div>
@@ -88,12 +88,15 @@ export default {
                 "?startDate=" +
                 date +
                 "&limit=4" +
-                (site.definition.restaurant ? "&restaurant=" + site.definition.restaurant.id : "")
+                (site.definition.restaurant
+                  ? "&restaurant=" + site.definition.restaurant.id
+                  : "")
             )
             .then(response => {
               vm.siteData[site.definition.id] = response.data;
               if (site.definition.restaurant) {
-                vm.restaurantData[site.definition.restaurant.id] = response.data;
+                vm.restaurantData[site.definition.restaurant.id] =
+                  response.data;
               }
               vm.$forceUpdate();
             });
@@ -114,6 +117,12 @@ export default {
 
 .reports {
   &.dark {
+    .center-panel {
+      .title,
+      .subtitle {
+        border-bottom: 1px solid #464646;
+      }
+    }
     .right-panel {
       border-color: #464646;
       .title {

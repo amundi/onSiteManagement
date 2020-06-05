@@ -5,10 +5,6 @@ import javax.persistence.*;
 
 @Entity
 @Data
-@Table(
-        uniqueConstraints=
-        @UniqueConstraint(columnNames={"user", "role"})
-)
 public class UserRole {
 
     @Id

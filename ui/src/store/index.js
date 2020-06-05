@@ -69,7 +69,7 @@ export default new Vuex.Store({
       axios
         .get("api/auth/userInfo")
         .then(response => {
-          if (!response.data || !response.data.login || !response.data.role) {
+          if (!response.data || !response.data.login || !response.data.role || response.data.role == 'none') {
             router.push("/denied");
           } else {
             commit("SET_USER", response.data);
