@@ -2,6 +2,7 @@ package com.amundi.tech.onsite.model;
 
 import com.amundi.tech.onsite.db.model.SiteCapacity;
 import com.amundi.tech.onsite.db.model.SiteDefinition;
+import com.amundi.tech.onsite.model.usage.SiteUsageImpl;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,7 +15,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Site {
+
     private SiteDefinition definition;
     private List<SiteCapacity> capacities;
-    private List<SiteUsage> usages;
+    private List<SiteUsageImpl> usages;
 }

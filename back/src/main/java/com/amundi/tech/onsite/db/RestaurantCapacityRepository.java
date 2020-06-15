@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 public interface RestaurantCapacityRepository extends JpaRepository<RestaurantCapacity, Long> {
+
     List<RestaurantCapacity> findAllByRestaurant(RestaurantDefinition restaurant);
 
     @Transactional

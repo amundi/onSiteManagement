@@ -2,6 +2,7 @@ package com.amundi.tech.onsite.model;
 
 import com.amundi.tech.onsite.db.model.RestaurantCapacity;
 import com.amundi.tech.onsite.db.model.RestaurantDefinition;
+import com.amundi.tech.onsite.model.usage.RestaurantUsageImpl;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,7 +15,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Restaurant {
+
     private RestaurantDefinition definition;
     private List<RestaurantCapacity> capacities;
-    private List<RestaurantUsage> usages;
+    private List<RestaurantUsageImpl> usages;
 }

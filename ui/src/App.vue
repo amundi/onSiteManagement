@@ -41,6 +41,9 @@ export default {
   &.dark {
     background-color: #242424;
     color: white;
+    .center-panel {
+      background: linear-gradient(60deg, #1d1d1d 0%, #212121 35%, #191818 100%);
+    }
 
     input {
       color: #242424;
@@ -54,7 +57,7 @@ export default {
     .v-select {
       &:not(.white) {
         div[role="combobox"] {
-          background-color: #242424;
+         
           border-color: #737373;
           input {
             background-color: #242424 !important;
@@ -108,8 +111,10 @@ export default {
   }
 
   &.light {
-    background-color: white;
     color: #242424;
+    .center-panel {
+      background: linear-gradient(60deg, #ececec 0%, #fafafa 35%, #ececec 100%);
+    }
 
     ::-webkit-scrollbar {
       width: 6px;
@@ -149,7 +154,7 @@ export default {
         }
       }
       .footer {
-        background-color: #2b2b2b;
+        background-color: #4848481c;
         border-color: #464646;
       }
     }
@@ -163,7 +168,7 @@ export default {
         }
       }
       .footer {
-        background-color: #efefef;
+        background-color: #f0f0f1;;
         border-color: #cacaca;
       }
     }

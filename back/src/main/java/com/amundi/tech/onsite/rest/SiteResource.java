@@ -6,7 +6,7 @@ import com.amundi.tech.onsite.db.model.SiteCapacity;
 import com.amundi.tech.onsite.db.model.SiteDefinition;
 import com.amundi.tech.onsite.exception.AppException;
 import com.amundi.tech.onsite.model.Site;
-import com.amundi.tech.onsite.model.SiteUsage;
+import com.amundi.tech.onsite.service.UsageService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,9 +30,10 @@ public class SiteResource {
 
     private final SiteDefinitionRepository siteDefinitionRepository;
     private final SiteCapacityRepository siteCapacityRepository;
+    private final UsageService usageService;
 
     @GetMapping(path = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Site> all(@RequestParam(value = "addStat",required = false) boolean addStat) {
+    public List<Site> all(@RequestParam(value = "addUsage",required = false) boolean addUsage) {
         List<Site> sites = new ArrayList<>();
         List<SiteDefinition> definitions = siteDefinitionRepository.findAll();
         definitions.parallelStream().forEach(d -> {
@@ -42,9 +43,8 @@ public class SiteResource {
                     .definition(d)
                     .capacities(capacities)
                     .build();
-            if (addStat) {
-                List<SiteUsage> usages = getSiteUsage(d.getId());
-                site.setUsages(usages);
+            if (addUsage) {
+                site.setUsages(usageService.getSiteUsages(d.getId()));
             }
             sites.add(site);
         });
@@ -62,9 +62,7 @@ public class SiteResource {
                 .definition(definition)
                 .capacities(siteCapacityRepository.findAllBySite(definition))
                 .build();
-
-        List<SiteUsage> usages = getSiteUsage(definition.getId());
-        site.setUsages(usages);
+        site.setUsages( usageService.getSiteUsages(definition.getId()));
         return site;
     }
 
@@ -97,10 +95,6 @@ public class SiteResource {
     public void delete(@PathVariable("id") long siteId) {
         siteCapacityRepository.deleteAllBySite(SiteDefinition.builder().id(siteId).build());
         siteDefinitionRepository.deleteById(siteId);
-    }
-
-    private List<SiteUsage> getSiteUsage(Long siteId) {
-        return new ArrayList<>();
     }
 
     private void sanitizeCapacities(Site site) throws AppException {

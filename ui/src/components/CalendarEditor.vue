@@ -20,7 +20,7 @@
           :class="{
             notADay: !day.day,
             beforeNow: day.status == 'beforeNow',
-            notOpen: !day.usage,
+            notOpen: !day.site,
             selected: day.selected,
             right: i == 6,
             left: i == 0,
@@ -29,48 +29,53 @@
           @click="updateSelectStatus(day)"
         >
           <div class="dayValue">{{ day.day }}</div>
-          <div v-if="day.currentUserUsage" class="currentUserUsage">
-            <div
-              v-if="((day.currentUserUsage.onSite || day.currentUserUsage.arrival) && getSettingProperty('manageOnSites') && !getSettingProperty('manageArrivals'))
+          
+          <template v-if="day.currentUserUsage" >
+            <div v-if="day.currentUserUsage.offSite" class="currentUserUsage off">
+              <div><font-awesome-icon icon="house-user"></font-awesome-icon></div>
+            </div>
+            <div v-if="!day.currentUserUsage.offSite" class="currentUserUsage">
+              <div
+                v-if="((day.currentUserUsage.onSite || day.currentUserUsage.arrival) && getSettingProperty('manageOnSites') && !getSettingProperty('manageArrivals'))
               || (day.currentUserUsage.onSite && !day.currentUserUsage.arrival && getSettingProperty('manageArrivals'))"
-              class="text-right"
-            >
-              <font-awesome-icon icon="map-marker-alt"></font-awesome-icon>
+                class="text-right"
+              >
+                <font-awesome-icon icon="map-marker-alt"></font-awesome-icon>
+              </div>
+              <div
+                v-if="day.currentUserUsage.arrival && getSettingProperty('manageArrivals')"
+                class="flex justify-between"
+              >
+                <font-awesome-icon icon="plane-arrival" class="mr-2"></font-awesome-icon>
+                &nbsp;{{ getAsTime(day.currentUserUsage.arrival) }}
+              </div>
+              <div
+                v-if="day.currentUserUsage.lunch && getSettingProperty('manageRestaurants')"
+                class="flex justify-between"
+              >
+                <font-awesome-icon icon="drumstick-bite" class="mr-2"></font-awesome-icon>
+                &nbsp;{{ getAsTime(day.currentUserUsage.lunch) }}
+              </div>
+              <div
+                v-if="day.currentUserUsage.departure && getSettingProperty('manageDepartures')"
+                class="flex justify-between"
+              >
+                <font-awesome-icon icon="plane-departure" class="mr-2"></font-awesome-icon>
+                &nbsp;{{ getAsTime(day.currentUserUsage.departure) }}
+              </div>
+              <div
+                v-if="day.currentUserUsage.parkingType && getSettingProperty('manageParkings')"
+                class="text-right"
+              >
+                <font-awesome-icon v-if="day.currentUserUsage.parkingType==='car'" icon="car"></font-awesome-icon>
+                <font-awesome-icon
+                  v-if="day.currentUserUsage.parkingType==='moto'"
+                  icon="motorcycle"
+                ></font-awesome-icon>
+                <font-awesome-icon v-if="day.currentUserUsage.parkingType==='bike'" icon="bicycle"></font-awesome-icon>
+              </div>
             </div>
-            <div
-              v-if="day.currentUserUsage.arrival && getSettingProperty('manageArrivals')"
-              class="flex justify-between"
-            >
-              <font-awesome-icon icon="plane-arrival" class="mr-2"></font-awesome-icon>
-              &nbsp;{{ getAsTime(day.currentUserUsage.arrival) }}
-            </div>
-            <div
-              v-if="day.currentUserUsage.restaurant && getSettingProperty('manageRestaurants')"
-              class="flex justify-between"
-            >
-              <font-awesome-icon icon="drumstick-bite" class="mr-2"></font-awesome-icon>
-              &nbsp;{{ getAsTime(day.currentUserUsage.restaurant) }}
-            </div>
-            <div
-              v-if="day.currentUserUsage.departure && getSettingProperty('manageDepartures')"
-              class="flex justify-between"
-            >
-              <font-awesome-icon icon="plane-departure" class="mr-2"></font-awesome-icon>
-              &nbsp;{{ getAsTime(day.currentUserUsage.departure) }}
-            </div>
-            <div
-              v-if="day.currentUserUsage.car && getSettingProperty('manageParkings')"
-              class="text-right"
-            >
-              <font-awesome-icon icon="car"></font-awesome-icon>
-            </div>
-            <div
-              v-if="day.currentUserUsage.moto && getSettingProperty('manageParkings')"
-              class="text-right"
-            >
-              <font-awesome-icon icon="motorcycle"></font-awesome-icon>
-            </div>
-          </div>
+          </template>
         </div>
       </div>
     </div>
@@ -89,9 +94,13 @@ export default {
   computed: {
     ...mapGetters([
       "hue",
-      "siteUsages",
       "settings",
+      "siteUsages",
+      "restaurantUsages",
+      "parkingUsages",
       "selectedSite",
+      "selectedRestaurant",
+      "selectedParking",
       "currentUserUsages"
     ]),
     monthName() {
@@ -102,12 +111,44 @@ export default {
   },
   watch: {
     siteUsages(val) {
-      this.updateCalendarData(val, this.currentUserUsages);
-      this.$forceUpdate();
+      let vm = this;
+      vm.updateCalendarData(
+        val,
+        vm.restaurantUsages,
+        vm.parkingUsages,
+        vm.currentUserUsages
+      );
+      vm.$forceUpdate();
+    },
+    restaurantUsages(val) {
+      let vm = this;
+      vm.updateCalendarData(
+        vm.siteUsages,
+        val,
+        vm.parkingUsages,
+        vm.currentUserUsages
+      );
+      vm.$forceUpdate();
+    },
+    parkingUsages(val) {
+      let vm = this;
+      vm.updateCalendarData(
+        vm.siteUsages,
+        vm.restaurantUsages,
+        val,
+        vm.currentUserUsages
+      );
+      vm.$forceUpdate();
     },
     currentUserUsages(val) {
-      this.updateCalendarData(this.siteUsages, val);
-      this.$forceUpdate();
+      let vm = this;
+      vm.updateCalendarData(
+        vm.siteUsages,
+        vm.restaurantUsages,
+        vm.parkingUsages,
+        val
+      );
+      vm.$forceUpdate();
     }
   },
   beforeMount() {
@@ -123,8 +164,21 @@ export default {
     let vm = this;
     bus.$on("clearDaySelections", function() {
       vm.selectedDays = [];
+      // if(vm.calendarData) {
+      //   for(let row of vm.calendarData) {
+      //     for(let day of row) {
+      //       day.selected = false;
+      //     }
+      //   }
+      // }
       vm.$forceUpdate();
     });
+    vm.updateCalendarData(
+      vm.siteUsages,
+      vm.restaurantUsages,
+      vm.parkingUsages,
+      vm.currentUserUsages
+    );
   },
   methods: {
     getAsTime(val) {
@@ -152,7 +206,12 @@ export default {
       }
       return false;
     },
-    updateCalendarData(siteUsages, currentUserUsages) {
+    updateCalendarData(
+      siteUsages,
+      restaurantUsages,
+      parkingUsages,
+      currentUserUsages
+    ) {
       let vm = this;
       const now = moment();
       if (siteUsages && currentUserUsages && vm.startOfMonth) {
@@ -189,12 +248,54 @@ export default {
             for (let week of data) {
               for (let day of week) {
                 if (m.date() == day.day) {
-                  day.usage = usage;
+                  day.site = usage;
                 }
               }
             }
           }
         }
+        // Adding restaurantUsages
+        if (restaurantUsages) {
+          for (let usage of restaurantUsages) {
+            let m = moment(usage.date);
+            if (
+              m
+                .clone()
+                .startOf("month")
+                .isSame(st)
+            ) {
+              for (let week of data) {
+                for (let day of week) {
+                  if (m.date() == day.day) {
+                    day.rest = usage;
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        // Adding parkingUsages
+        if (parkingUsages) {
+          for (let usage of parkingUsages) {
+            let m = moment(usage.date);
+            if (
+              m
+                .clone()
+                .startOf("month")
+                .isSame(st)
+            ) {
+              for (let week of data) {
+                for (let day of week) {
+                  if (m.date() == day.day) {
+                    day.park = usage;
+                  }
+                }
+              }
+            }
+          }
+        }
+
         // Adding currentUserUsages
         for (let usage of currentUserUsages) {
           let m = moment(usage.date);
@@ -209,8 +310,8 @@ export default {
                 if (
                   m.date() == day.day &&
                   vm.selectedSite &&
-                  usage.site &&
-                  vm.selectedSite.id == usage.site.id
+                  usage.siteId &&
+                  vm.selectedSite == usage.siteId
                 ) {
                   day.currentUserUsage = usage;
                 }
@@ -234,7 +335,7 @@ export default {
           });
           this.$forceUpdate();
         }
-      } else if (day.day && day.status != "beforeNow" && day.usage) {
+      } else if (day.day && day.status != "beforeNow" && day.site) {
         day.selected = true;
         vm.selectedDays.push(day);
         bus.$emit("selectedDays", {
@@ -263,14 +364,15 @@ export default {
 
     .content {
       .day-col.day {
-        border-color: #8d959c !important;
+        border-color: #d0dee8 !important;
         color: #2b67b3;
         &.beforeNow {
-          color: #5e5e5e;
+          color: #00b6ed;
+          background-color: white;
         }
         &.notOpen:not(.beforeNow):not(.notADay) {
           color: #00b6ed;
-          background-color: #e6ebef;
+          background-color: #d8eef9;
         }
         &:not(.notOpen):not(.beforeNow):not(.notADay) {
           background-color: white;
@@ -287,6 +389,9 @@ export default {
         .currentUserUsage {
           color: white;
           background-color: #06a4d4;
+          &.off {
+            background-color: #bf80ac;
+          }
         }
       }
     }
@@ -305,12 +410,12 @@ export default {
 
     .content {
       .day-col.day {
-        border-color: #464646 !important;
+        border-color: #2f414a !important;
         &.beforeNow {
-          color: #5e5e5e;
+          color: #909090;
         }
         &.notOpen:not(.beforeNow):not(.notADay) {
-          color: #5a5a5a;
+          color: #909090;
           background-color: #191919;
         }
         &:not(.notOpen):not(.beforeNow):not(.notADay) {
@@ -330,6 +435,9 @@ export default {
       .currentUserUsage {
         color: white;
         background-color: #1b5688;
+        &.off {
+          background-color: #7a457d;
+        }
       }
     }
   }
@@ -400,9 +508,16 @@ export default {
           -60deg,
           transparent,
           transparent 8px,
-          #40404020 8px,
-          #40404020 16px
+          #61a7de2e 8px,
+          #61a7de2e 16px
         );
+        // background: repeating-linear-gradient(
+        //   -60deg,
+        //   transparent,
+        //   transparent 8px,
+        //   #40404020 8px,
+        //   #40404020 16px
+        // );
         min-height: 100%;
       }
 

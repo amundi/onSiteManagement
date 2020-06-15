@@ -8,6 +8,7 @@ public class AppException extends Exception {
     public static final String EMPTY_USER_ROLES = "empty user role list";
     public static final String SITE_DOESNT_EXIST = "site % does not exist";
     public static final String RESTAURANT_DOESNT_EXIST = "restaurant %s doesn not exist";
+    public static final String PARKING_DOESNT_EXIST = "parking %s doesn not exist";
     public static final String CURRENT_USER_CANNOT_REMOVE_ADMIN_ROLE = "current user cannot remove his own admin role";
 
     public AppException() {

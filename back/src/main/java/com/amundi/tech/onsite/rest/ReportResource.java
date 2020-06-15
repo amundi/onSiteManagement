@@ -4,6 +4,8 @@ import com.amundi.tech.onsite.db.UserRoleRepository;
 import com.amundi.tech.onsite.db.WorkingDayRepository;
 import com.amundi.tech.onsite.db.model.UserRole;
 import com.amundi.tech.onsite.db.model.WorkingDay;
+import com.amundi.tech.onsite.model.usage.SiteUsageReport;
+import com.amundi.tech.onsite.service.UsageService;
 import com.amundi.tech.onsite.xlsx.XlsxClient;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
@@ -12,10 +14,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -36,6 +35,17 @@ public class ReportResource {
     private final WorkingDayRepository workingDayRepository;
     private final UserRoleRepository userRoleRepository;
     private final XlsxClient xlsxClient;
+    private UsageService usageService;
+
+    @GetMapping(path = "/site/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<SiteUsageReport> reportSite(@PathVariable("id") long siteId,
+                                            @RequestParam(value = "startDate", required = false)
+                                            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+                                            @RequestParam(value = "limit", required = false) Integer limit) {
+        return (startDate!=null && limit !=null)?
+                usageService.getSiteReports(startDate, LocalDate.from(startDate).plusDays(limit), siteId):
+                usageService.getSiteReports(siteId);
+    }
 
     @GetMapping(path = "/weekly", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity xlsxReport(

@@ -10,9 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 public interface UserRoleRepository extends JpaRepository<UserRole, Long> {
-    List<UserRole> getAllByUser(String user);
-    List<UserRole> getAllByRoleNotIn(List<String> excludedRoles);
 
+    List<UserRole> getAllByUser(String user);
+
+    List<UserRole> getAllByRoleNotIn(List<String> excludedRoles);
 
     @Transactional
     void deleteAllByUser(String user);

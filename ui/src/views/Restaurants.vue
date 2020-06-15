@@ -8,7 +8,7 @@
             @click="
               createdRestaurant =
                 createdRestaurant == null
-                  ? { name: '', description: '', path: '#France #Paris' }
+                  ? { name: '', description: '', tags: '#France #Paris' }
                   : null
             "
           >
@@ -54,7 +54,7 @@
                 class="appearance-none block w-full border rounded py-1 px-2 leading-tight focus:outline-none focus:border-gray-500"
                 id="inline-path"
                 type="text"
-                v-model="createdRestaurant.path"
+                v-model="createdRestaurant.tags"
               />
             </div>
           </div>
@@ -119,11 +119,11 @@
                 </template>
               </div>
 
-              <template v-if="restaurant != editedRestaurant && restaurant.definition.path">
+              <template v-if="restaurant != editedRestaurant && restaurant.definition.tags">
                 <div class="tags flex">
                   <span
                     class="tag"
-                    v-for="tag of restaurant.definition.path.split(' ')"
+                    v-for="tag of restaurant.definition.tags.split(' ')"
                     :key="tag"
                     >{{ tag }}</span
                   >
@@ -135,7 +135,7 @@
                     class="appearance-none block w-full border rounded py-1 px-2 leading-tight focus:outline-none focus:border-gray-500"
                     id="inline-path"
                     type="text"
-                    v-model="restaurant.definition.path"
+                    v-model="restaurant.definition.tags"
                   />
                 </div>
               </template>
@@ -188,12 +188,11 @@ export default {
         })
         .then(response => {
           if (response.data && response.data.definition && response.data.definition.name) {
-            store.commit(
-              "SET_INFO",
+            store.dispatch(
+              "setInfo",
               "Restaurant " + response.data.definition.name + " successfully created"
             );
           } else {
-            console.log(response.data);
             store.commit("SET_INFO", "Error while creating restaurant");
           }
           store.dispatch("loadRestaurants");
@@ -217,7 +216,7 @@ export default {
       axios
         .post("api/restaurant/", restaurant)
         .then(() => {
-          store.commit("SET_INFO", "Restaurant " + restaurant.definition.name + "  saved.");
+          store.dispatch("setInfo", "Restaurant " + restaurant.definition.name + "  saved.");
           vm.reloadRestaurants();
         })
         .catch(err => {
@@ -233,7 +232,7 @@ export default {
       axios
         .delete("api/restaurant/" + restaurant.definition.id)
         .then(() => {
-          store.commit("SET_INFO", "Restaurant " + restaurant.definition.name + "  deleted.");
+          store.dispatch("setInfo", "Restaurant " + restaurant.definition.name + "  deleted.");
           vm.reloadRestaurants();
         })
         .catch(err => {

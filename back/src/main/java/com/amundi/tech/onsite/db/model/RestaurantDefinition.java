@@ -24,6 +24,6 @@ public class RestaurantDefinition {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "path")
-    private String path;
+    @Column(name = "tags")
+    private String tags;
 }

@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 public interface SiteCapacityRepository extends JpaRepository<SiteCapacity, Long> {
+
     List<SiteCapacity> findAllBySite(SiteDefinition site);
 
     @Transactional

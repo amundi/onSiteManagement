@@ -28,6 +28,12 @@
           <span>Restaurants</span>
         </router-link>
       </div>
+       <div class="item" :class="{ selected: currentRoute === '/parkings' }">
+        <router-link to="/parkings" class="nav-link w-auto">
+          <font-awesome-icon icon="parking"></font-awesome-icon>
+          <span>Parkings</span>
+        </router-link>
+      </div>
     </div>
     <div
       class="report-menu"

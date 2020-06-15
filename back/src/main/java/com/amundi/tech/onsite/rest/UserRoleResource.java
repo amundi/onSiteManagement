@@ -2,8 +2,8 @@ package com.amundi.tech.onsite.rest;
 
 import com.amundi.tech.onsite.db.UserRoleRepository;
 import com.amundi.tech.onsite.db.model.UserRole;
-import com.amundi.tech.onsite.model.UserRoles;
 import com.amundi.tech.onsite.exception.AppException;
+import com.amundi.tech.onsite.model.UserRoles;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;

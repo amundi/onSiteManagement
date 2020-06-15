@@ -212,6 +212,7 @@ export default {
   top: 0;
   right: 0;
   height: 48px;
+  z-index: 10;
 
   border-top: 3px solid $primaryColor;
   border-bottom: 1px solid;

@@ -67,11 +67,4 @@ public class SiteCapacity {
 
     @Column(name = "departure_1900")
     private int departure_1900;
-
-    // Parking -----------------------------
-    @Column(name = "motorcycle")
-    private int motorcycle;
-
-    @Column(name = "car")
-    private int car;
 }

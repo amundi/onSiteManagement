@@ -1,5 +1,5 @@
 <template>
-  <div class="capabilities" :class="[hue]">
+  <div class="capabilities center-panel" :class="[hue]">
     <ag-grid-vue
       style="height: 500px;"
       :class="{
@@ -198,27 +198,6 @@ export default {
             valueParser: this.numberParser
           }
         ]
-      },
-      {
-        headerName: "Parking",
-        children: [
-          {
-            headerName: "car",
-            field: "car",
-            editable: true,
-            width: 70,
-            minwidth: 45,
-            valueParser: this.numberParser
-          },
-          {
-            headerName: "moto",
-            field: "motorcycle",
-            editable: true,
-            width: 70,
-            minwidth: 45,
-            valueParser: this.numberParser
-          }
-        ]
       }
     ];
 
@@ -267,9 +246,7 @@ export default {
         departure_1730: 0,
         departure_1800: 0,
         departure_1830: 0,
-        departure_1900: 0,
-        motorcycle: 0,
-        car: 0
+        departure_1900: 0
       });
     }
   }

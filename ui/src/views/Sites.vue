@@ -1,5 +1,5 @@
 <template>
-  <div id="sites" class="w-full" :class="[hue]">
+  <div id="sites" class="w-full center-panel" :class="[hue]">
     <div class="wrapper w-full p-4">
       <div class="create w-full select-none">
         <div class="buttons flex">
@@ -7,7 +7,7 @@
             class="button create-button ml-3"
             @click="
               createdSite =
-                createdSite == null ? { name: '', description: '', path: '#France #Paris' } : null
+                createdSite == null ? { name: '', description: '', tags: '#France #Paris' } : null
             "
           >
             <font-awesome-icon class="menu" icon="plus"></font-awesome-icon>&nbsp;create site
@@ -52,7 +52,7 @@
                 class="appearance-none block w-full border rounded py-1 px-2 leading-tight focus:outline-none focus:border-gray-500"
                 id="inline-path"
                 type="text"
-                v-model="createdSite.path"
+                v-model="createdSite.tags"
               />
             </div>
           </div>
@@ -110,42 +110,44 @@
                 </template>
               </div>
 
-              <template v-if="site != editedSite && site.definition.path">
+              <template v-if="site != editedSite && site.definition.tags">
                 <div class="flex">
-                  <div class="tags flex w-1/2">
-                    <span class="tag" v-for="tag of site.definition.path.split(' ')" :key="tag">
-                      {{ tag }}
-                    </span>
+                  <div class="tags flex w-1/3">
+                    <span
+                      class="tag"
+                      v-for="tag of site.definition.tags.split(' ')"
+                      :key="tag"
+                    >{{ tag }}</span>
                   </div>
-                  <div class="restaurant flex w-1/2">
+                  <div class="restaurant flex w-1/3">
                     <font-awesome-icon icon="utensils"></font-awesome-icon>
-                    <div class="value">
-                      {{ site.definition.restaurant ? site.definition.restaurant.name : "none" }}
-                    </div>
+                    <div
+                      class="value"
+                    >{{ site.definition.defaultRestaurant ? site.definition.defaultRestaurant.name : "none" }}</div>
+                  </div>
+                  <div class="parking flex w-1/3">
+                    <font-awesome-icon icon="parking"></font-awesome-icon>
+                    <div
+                      class="value"
+                    >{{ site.definition.defaultParking ? site.definition.defaultParking.name : "none" }}</div>
                   </div>
                 </div>
               </template>
               <template v-if="site == editedSite">
                 <div class="flex">
-                  <div class="tags w-1/2">
+                  <div class="tags w-1/3">
                     <input
                       class="appearance-none block w-full border rounded py-1 px-2 leading-tight focus:outline-none focus:border-gray-500"
                       id="inline-path"
                       type="text"
-                      v-model="site.definition.path"
+                      v-model="site.definition.tags"
                     />
                   </div>
-                  <div class="restaurant flex w-1/2">
-                    <v-select
-                      class="white"
-                      :options="listRestaurants"
-                      v-model="selectedRestaurant"
-                    ></v-select>
-                    <!-- <input
-                    class="appearance-none block w-full border rounded py-1 px-2 leading-tight focus:outline-none focus:border-gray-500"
-                    type="text"
-                    v-model="site.definition.restaurant"
-                    />-->
+                  <div class="restaurant flex w-1/3">
+                    <v-select class="white" :options="listRestaurants" v-model="selectedRestaurant"></v-select>
+                  </div>
+                  <div class="parking flex w-1/3">
+                    <v-select class="white" :options="listParkings" v-model="selectedParking"></v-select>
                   </div>
                 </div>
               </template>
@@ -171,7 +173,7 @@ export default {
   store,
   components: { SiteCapacities },
   computed: {
-    ...mapGetters(["hue", "sites", "restaurants"]),
+    ...mapGetters(["hue", "sites", "restaurants", "parkings"]),
     orderedSites() {
       return this.sites.slice().sort((a, b) => {
         return a.definition.name.localeCompare(b.definition.name);
@@ -183,13 +185,46 @@ export default {
         rs.push({ label: r.definition.name, code: r.definition.id });
       }
       return rs;
+    },
+    listParkings() {
+      let rs = [{ label: "none", code: null }];
+      for (let r of this.parkings) {
+        rs.push({ label: r.definition.name, code: r.definition.id });
+      }
+      return rs;
     }
   },
   watch: {
     selectedRestaurant(val) {
       if (val && this.editedSite) {
-        this.editedSite.definition.restaurant =
-          this.selectedRestaurant.code != null ? { id: this.selectedRestaurant.code } : null;
+        this.editedSite.definition.defaultRestaurant =
+          this.selectedRestaurant.code != null
+            ? { id: this.selectedRestaurant.code }
+            : null;
+      }
+    },
+    selectedParking(val) {
+      if (val && this.editedSite) {
+        this.editedSite.definition.defaultParking =
+          this.selectedParking.code != null
+            ? { id: this.selectedParking.code }
+            : null;
+      }
+    },
+    editedSite(val) {
+      if (val) {
+        if (val.definition.defaultRestaurant) {
+          this.selectedRestaurant = {
+            label: val.definition.defaultRestaurant.name,
+            code: val.definition.defaultRestaurant.id
+          };
+        }
+        if (val.definition.defaultParking) {
+          this.selectedParking = {
+            label: val.definition.defaultParking.name,
+            code: val.definition.defaultParking.id
+          };
+        }
       }
     }
   },
@@ -197,7 +232,8 @@ export default {
     return {
       createdSite: null,
       editedSite: null,
-      selectedRestaurant: null
+      selectedRestaurant: null,
+      selectedParking: null
     };
   },
   methods: {
@@ -206,9 +242,13 @@ export default {
       axios
         .post("api/site/", { definition: definition, capacities: capacities })
         .then(response => {
-          if (response.data && response.data.definition && response.data.definition.name) {
-            store.commit(
-              "SET_INFO",
+          if (
+            response.data &&
+            response.data.definition &&
+            response.data.definition.name
+          ) {
+            store.dispatch(
+              "setInfo",
               "Site " + response.data.definition.name + " successfully created"
             );
           } else {
@@ -218,10 +258,12 @@ export default {
           store.dispatch("loadSites");
         })
         .catch(err => {
-          store.commit(
-            "SET_INFO",
+          store.dispatch(
+            "setInfo",
             "Error while creating site: " +
-              (err.response && err.response.data ? err.response.data.message : err.message)
+              (err.response && err.response.data
+                ? err.response.data.message
+                : err.message)
           );
         });
       vm.createdSite = null;
@@ -237,14 +279,19 @@ export default {
       axios
         .post("api/site/", site)
         .then(() => {
-          store.commit("SET_INFO", "Site " + site.definition.name + "  saved.");
+          store.dispatch(
+            "setInfo",
+            "Site " + site.definition.name + "  saved."
+          );
           vm.reloadSites();
         })
         .catch(err => {
-          store.commit(
-            "SET_INFO",
+          store.dispatch(
+            "setInfo",
             "Error while saving site: " +
-              (err.response && err.response.data ? err.response.data.message : err.message)
+              (err.response && err.response.data
+                ? err.response.data.message
+                : err.message)
           );
         });
     },
@@ -253,14 +300,19 @@ export default {
       axios
         .delete("api/site/" + site.definition.id)
         .then(() => {
-          store.commit("SET_INFO", "Site " + site.definition.name + "  deleted.");
+          store.dispatch(
+            "setInfo",
+            "Site " + site.definition.name + "  deleted."
+          );
           vm.reloadSites();
         })
         .catch(err => {
-          store.commit(
-            "SET_INFO",
+          store.dispatch(
+            "setInfo",
             "Error while deleting site: " +
-              (err.response && err.response.data ? err.response.data.message : err.message)
+              (err.response && err.response.data
+                ? err.response.data.message
+                : err.message)
           );
         });
     }
@@ -284,6 +336,7 @@ export default {
     .buttons {
       .button {
         border: 1px solid #636262;
+        background-color: #191919;
         &.delete:hover {
           color: white;
           background-color: #ec4f4f !important;
@@ -304,7 +357,7 @@ export default {
     }
     .site {
       .main {
-        background-color: #2b2b2b;
+        background-color: #4848481c;
         border-color: #464646;
         .tag {
           color: #d8d8d8;
@@ -323,6 +376,7 @@ export default {
     .buttons {
       .button {
         border: 1px solid #4ca9e0;
+        background-color: white;
         color: #4ca9e0;
 
         &.cancel {
@@ -352,7 +406,7 @@ export default {
     }
     .site {
       .main {
-        background-color: #efefef;
+        background-color: #f0f0f1;
         border-color: #cacaca;
         .tag {
           color: #39739d;
@@ -360,7 +414,7 @@ export default {
           border: 1px solid #d0e0ec;
         }
 
-        .restaurant {
+        .restaurant, .parking {
           svg {
             color: #1f689e;
           }
@@ -448,7 +502,7 @@ export default {
           font-size: 0.8rem;
         }
       }
-      .restaurant {
+      .restaurant, .parking {
         svg {
           margin-top: 3px;
         }

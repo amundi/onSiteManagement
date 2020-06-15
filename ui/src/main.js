@@ -34,7 +34,9 @@ import {
   faCheckCircle,
   faWalking,
   faUserLock,
-  faMapMarkerAlt
+  faMapMarkerAlt,
+  faBicycle,
+  faHouseUser
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import ToggleButton from "vue-js-toggle-button";
@@ -82,9 +84,11 @@ library.add(
   faArrowRight,
   faMotorcycle,
   faCar,
+  faBicycle,
   faWalking,
   faUserLock,
-  faMapMarkerAlt
+  faMapMarkerAlt,
+  faHouseUser
 );
 Vue.component("font-awesome-icon", FontAwesomeIcon);
 Vue.use(ToggleButton);

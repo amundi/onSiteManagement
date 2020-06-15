@@ -24,10 +24,14 @@ public class SiteDefinition {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "path")
-    private String path;
+    @Column(name = "tags")
+    private String tags;
 
     @ManyToOne
-    @JoinColumn(name = "restaurant")
-    private RestaurantDefinition restaurant;
+    @JoinColumn(name = "default_restaurant")
+    private RestaurantDefinition defaultRestaurant;
+
+    @ManyToOne
+    @JoinColumn(name = "default_parking")
+    private ParkingDefinition defaultParking;
 }

@@ -6,7 +6,8 @@ import com.amundi.tech.onsite.db.model.RestaurantCapacity;
 import com.amundi.tech.onsite.db.model.RestaurantDefinition;
 import com.amundi.tech.onsite.exception.AppException;
 import com.amundi.tech.onsite.model.Restaurant;
-import com.amundi.tech.onsite.model.RestaurantUsage;
+import com.amundi.tech.onsite.model.usage.RestaurantUsageImpl;
+import com.amundi.tech.onsite.service.UsageService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,9 +31,10 @@ public class RestaurantResource {
 
     private final RestaurantDefinitionRepository restaurantDefinitionRepository;
     private final RestaurantCapacityRepository restaurantCapacityRepository;
+    private UsageService usageService;
 
     @GetMapping(path = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Restaurant> all(@RequestParam(value = "addStat",required = false) boolean addStat) {
+    public List<Restaurant> all(@RequestParam(value = "addUsage",required = false) boolean addUsage) {
         List<Restaurant> restaurants = new ArrayList<>();
         List<RestaurantDefinition> definitions = restaurantDefinitionRepository.findAll();
         definitions.parallelStream().forEach(d -> {
@@ -42,8 +44,8 @@ public class RestaurantResource {
                     .definition(d)
                     .capacities(capacities)
                     .build();
-            if (addStat) {
-                List<RestaurantUsage> usages = getRestaurantUsage(d.getId());
+            if (addUsage) {
+                List<RestaurantUsageImpl> usages = usageService.getRestaurantUsages(d.getId());
                 restaurant.setUsages(usages);
             }
             restaurants.add(restaurant);
@@ -63,7 +65,7 @@ public class RestaurantResource {
                 .capacities(restaurantCapacityRepository.findAllByRestaurant(definition))
                 .build();
 
-        List<RestaurantUsage> usages = getRestaurantUsage(definition.getId());
+        List<RestaurantUsageImpl> usages = usageService.getRestaurantUsages(definition.getId());
         restaurant.setUsages(usages);
         return restaurant;
     }
@@ -97,10 +99,6 @@ public class RestaurantResource {
     public void delete(@PathVariable("id") long siteId) {
         restaurantCapacityRepository.deleteAllByRestaurant(RestaurantDefinition.builder().id(siteId).build());
         restaurantDefinitionRepository.deleteById(siteId);
-    }
-
-    private List<RestaurantUsage> getRestaurantUsage(Long siteId) {
-        return new ArrayList<>();
     }
 
     private void sanitizeCapacities(Restaurant restaurant) throws AppException {

@@ -1,7 +1,7 @@
 <template>
-  <div id="settings" class="w-full" :class="[hue]">
+  <div id="settings" class="w-2/3 center-panel" :class="[hue]">
     <div class="wrapper w-full">
-      <div class="section features w-2/3">
+      <div class="section features w-full">
         <div class="title text-left pl-3 flex justify-between">
           <div>Management features</div>
           <div class="actions">
@@ -88,7 +88,7 @@
           </div>
         </div>
       </div>
-      <div class="section users w-2/3">
+      <div class="section users w-full">
         <div class="title text-left pl-3 flex justify-between">
           <div>Users management</div>
           <div class="actions flex">
@@ -345,17 +345,20 @@ export default {
 
 #settings {
   &.light {
+    border-color: #cacaca;
+
     .section {
       .title {
         border-bottom: 1px solid #cacaca;
       }
       .item.even {
-        background-color: #eff3f5;
+        background-color: #c3f0fd91;
       }
 
       .button {
         border: 1px solid #4ca9e0;
         color: #4ca9e0;
+        background-color: white;
       }
 
       .role-title {
@@ -371,7 +374,7 @@ export default {
         }
       }
       .user-editor {
-        background-color: #eff3f5;
+        background-color: white;
       }
       .user {
         color: white;
@@ -389,6 +392,8 @@ export default {
   }
 
   &.dark {
+    border-color: #464646;
+
     .section {
       .title {
         border-bottom: 1px solid #464646;
@@ -399,6 +404,7 @@ export default {
     }
     .button {
       border: 1px solid #636262;
+      background-color: #191919;
     }
 
     .users {
@@ -435,6 +441,7 @@ export default {
     }
   }
 
+  border-right: 1px solid;
   .section {
     .title {
       margin-bottom: 15px;
@@ -479,7 +486,7 @@ export default {
         }
       }
       .user-editor-wrapper {
-        margin: 10px 0 10px 15px;
+        margin: 10px 0 10px 0px;
         .user-editor {
           font-size: 0.8rem;
           padding: 5px;

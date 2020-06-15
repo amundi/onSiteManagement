@@ -6,22 +6,42 @@
         <div v-for="site of sites" class="report" :key="site.definition.id">
           <div class="subtitle w-1/2 text-left">{{ site.definition.name }}</div>
           <div class="content">
-            <EntityReport
+            <SiteReport
               :values="siteData[site.definition.id]"
               :type="'site'"
               :name="'site-' + site.definition.id"
               :startDate="date"
               :nb="5"
-            ></EntityReport>
+            ></SiteReport>
           </div>
         </div>
-        <div class="comments">
-          <div
-            class="comment text-right"
-          >* red lines represent arrival time slots, green lines lunch time slots,</div>
-          <div
-            class="comment text-right"
-          >orange lines departures time slots, and purple lines parkings.</div>
+      </div>
+      <div class="section">
+        <div class="title">Restaurants</div>
+        <div v-for="restaurant of restaurants" class="report" :key="restaurant.definition.id">
+          <div class="subtitle w-1/2 text-left">{{ restaurant.definition.name }}</div>
+          <div class="content">
+            <RestaurantReport
+              :values="restaurantData[restaurant.definition.id]"
+              :name="'restaurant-' + restaurant.definition.id"
+              :startDate="date"
+              :nb="5"
+            ></RestaurantReport>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="title">Parkings</div>
+        <div v-for="parking of parkings" class="report" :key="parking.definition.id">
+          <div class="subtitle w-1/2 text-left">{{ parking.definition.name }}</div>
+          <div class="content">
+            <ParkingReport
+              :values="parkingData[parking.definition.id]"
+              :name="'parking-' + parking.definition.id"
+              :startDate="date"
+              :nb="5"
+            ></ParkingReport>
+          </div>
         </div>
       </div>
     </div>
@@ -47,13 +67,23 @@ import axios from "axios";
 import moment from "moment";
 import DatePick from "vue-date-pick";
 import "vue-date-pick/dist/vueDatePick.css";
-import EntityReport from "@/components/EntityReport";
+import SiteReport from "@/components/report/SiteReport";
+import RestaurantReport from "@/components/report/RestaurantReport";
+import ParkingReport from "@/components/report/ParkingReport";
 
 export default {
   store,
-  components: { EntityReport, DatePick },
+  components: { SiteReport, RestaurantReport, ParkingReport, DatePick },
   computed: {
-    ...mapGetters(["hue", "sites", "siteDefinitions"])
+    ...mapGetters([
+      "hue",
+      "sites",
+      "siteDefinitions",
+      "restaurants",
+      "restaurantDefinitions",
+      "parkings",
+      "parkingDefinitions"
+    ])
   },
   watch: {
     date(val) {
@@ -65,7 +95,8 @@ export default {
       reportSite: null,
       date: null,
       siteData: {},
-      restaurantData: {}
+      restaurantData: {},
+      parkingData: {}
     };
   },
   methods: {
@@ -83,21 +114,46 @@ export default {
         for (let site of vm.sites) {
           axios
             .get(
-              "api/usage/site/basic/" +
+              "api/usage/site/" +
                 site.definition.id +
                 "?startDate=" +
                 date +
-                "&limit=4" +
-                (site.definition.restaurant
-                  ? "&restaurant=" + site.definition.restaurant.id
-                  : "")
+                "&limit=4"
             )
             .then(response => {
               vm.siteData[site.definition.id] = response.data;
-              if (site.definition.restaurant) {
-                vm.restaurantData[site.definition.restaurant.id] =
-                  response.data;
-              }
+              vm.$forceUpdate();
+            });
+        }
+      }
+      if (vm.restaurants) {
+        for (let restaurant of vm.restaurants) {
+          axios
+            .get(
+              "api/usage/restaurant/" +
+                restaurant.definition.id +
+                "?startDate=" +
+                date +
+                "&limit=4"
+            )
+            .then(response => {
+              vm.restaurantData[restaurant.definition.id] = response.data;
+              vm.$forceUpdate();
+            });
+        }
+      }
+      if (vm.parkings) {
+        for (let parking of vm.parkings) {
+          axios
+            .get(
+              "api/usage/parking/" +
+                parking.definition.id +
+                "?startDate=" +
+                date +
+                "&limit=4"
+            )
+            .then(response => {
+              vm.parkingData[parking.definition.id] = response.data;
               vm.$forceUpdate();
             });
         }
@@ -205,20 +261,16 @@ export default {
       font-weight: 100;
     }
 
+    .section {
+      padding-bottom: 70px;
+    }
+
     .subtitle {
       text-align: left;
       padding-left: 15px;
       margin-top: 20px;
       font-size: 0.8rem;
       font-weight: bold;
-    }
-
-    .comments {
-      padding-top: 20px;
-      .comment {
-        padding-right: 10px;
-        font-size: 0.6rem;
-      }
     }
   }
 

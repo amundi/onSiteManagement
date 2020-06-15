@@ -15,9 +15,13 @@ export default new Vuex.Store({
     info: null,
     sites: [],
     restaurants: [],
+    parkings: [],
     selectedSite: null,
     selectedRestaurant: null,
+    selectedParking: null,
     siteUsages: [],
+    restaurantUsages: [],
+    parkingUsages: [],
     currentUserUsages: []
   },
   mutations: {
@@ -42,11 +46,26 @@ export default new Vuex.Store({
     SET_RESTAURANTS: (state, restaurants) => {
       state.restaurants = restaurants;
     },
+    SET_PARKINGS: (state, parkings) => {
+      state.parkings = parkings;
+    },
     SET_SELECTED_SITE: (state, selectedSite) => {
       state.selectedSite = selectedSite;
     },
+    SET_SELECTED_RESTAURANT: (state, selectedRestaurant) => {
+      state.selectedRestaurant = selectedRestaurant;
+    },
+    SET_SELECTED_PARKING: (state, selectedParking) => {
+      state.selectedParking = selectedParking;
+    },
     SET_SITE_USAGES: (state, siteUsages) => {
       state.siteUsages = siteUsages;
+    },
+    SET_RESTAURANT_USAGES: (state, restaurantUsages) => {
+      state.restaurantUsages = restaurantUsages;
+    },
+    SET_PARKING_USAGES: (state, parkingUsages) => {
+      state.parkingUsages = parkingUsages;
     },
     SET_USER_ROLES: (state, userRoles) => {
       state.userRoles = userRoles;
@@ -65,11 +84,22 @@ export default new Vuex.Store({
     }
   },
   actions: {
+    async setInfo({ commit }, message) {
+      commit("SET_INFO", message);
+      setTimeout(() => {
+        commit("SET_INFO", null);
+      }, 3000);
+    },
     async getUserInfo({ commit, dispatch }) {
       axios
         .get("api/auth/userInfo")
         .then(response => {
-          if (!response.data || !response.data.login || !response.data.role || response.data.role == 'none') {
+          if (
+            !response.data ||
+            !response.data.login ||
+            !response.data.role ||
+            response.data.role == "none"
+          ) {
             router.push("/denied");
           } else {
             commit("SET_USER", response.data);
@@ -83,7 +113,7 @@ export default new Vuex.Store({
     },
     async loadSettings({ commit }) {
       axios
-        .get("api/setting/all")
+        .get("api/settings")
         .then(response => {
           commit("SET_SETTINGS", response.data.settings);
         })
@@ -91,12 +121,12 @@ export default new Vuex.Store({
           commit("SET_INFO", "Error: " + err.message);
         });
     },
-    async saveSettings({ commit }, settings) {
+    async saveSettings({ commit, dispatch }, settings) {
       axios
-        .post("api/setting/all", { settings })
+        .post("api/settings", { settings })
         .then(response => {
           commit("SET_SETTINGS", response.data.settings);
-          commit("SET_INFO", "Settings saved");
+          dispatch("setInfo", "Settings saved");
         })
         .catch(err => {
           commit("SET_INFO", "Error: " + err.message);
@@ -122,6 +152,16 @@ export default new Vuex.Store({
           commit("SET_INFO", "Error: " + err.message);
         });
     },
+    async loadParkings({ commit }) {
+      axios
+        .get("api/parking/all")
+        .then(response => {
+          commit("SET_PARKINGS", response.data);
+        })
+        .catch(err => {
+          commit("SET_INFO", "Error: " + err.message);
+        });
+    },
     async changeOverridenUser({ commit, dispatch }, overridenUser) {
       commit("SET_OVERRIDEN_USER", overridenUser);
       if (overridenUser) {
@@ -130,29 +170,54 @@ export default new Vuex.Store({
         window.location.href = "/";
       }
     },
-    async changeSelectedSite({ commit, dispatch, state }, selectedSite) {
-      commit("SET_SELECTED_SITE", selectedSite);
-      if (state.sites) {
-        for (let site of state.sites) {
-          if (site.definition && site.definition.id == selectedSite.id) {
-            dispatch("loadSiteUsages", selectedSite);
-            break;
-          }
-        }
+    async changeSelectedSite({ commit, dispatch }, selectedSite) {
+      if (selectedSite) {
+        commit("SET_SELECTED_SITE", selectedSite);
+        dispatch("loadSiteUsages", selectedSite);
+      }
+    },
+    async changeSelectedRestaurant({ commit, dispatch }, selectedRestaurant) {
+      if (selectedRestaurant) {
+        commit("SET_SELECTED_RESTAURANT", selectedRestaurant);
+        dispatch("loadRestaurantUsages", selectedRestaurant);
+      }
+    },
+    async changeSelectedParking({ commit, dispatch }, selectedParking) {
+      if (selectedParking) {
+        commit("SET_SELECTED_PARKING", selectedParking);
+        dispatch("loadParkingUsages", selectedParking);
       }
     },
     async loadSiteUsages({ commit }, selectedSite) {
       if (selectedSite) {
         axios
-          .get(
-            "api/usage/site/basic/" +
-              selectedSite.id +
-              (selectedSite.restaurant && selectedSite.restaurant.id
-                ? "?restaurant=" + selectedSite.restaurant.id
-                : "")
-          )
+          .get("api/usage/site/" + selectedSite)
           .then(response => {
             commit("SET_SITE_USAGES", response.data);
+          })
+          .catch(err => {
+            commit("SET_INFO", "Error: " + err.message);
+          });
+      }
+    },
+    async loadRestaurantUsages({ commit }, selectedRestaurant) {
+      if (selectedRestaurant) {
+        axios
+          .get("api/usage/restaurant/" + selectedRestaurant)
+          .then(response => {
+            commit("SET_RESTAURANT_USAGES", response.data);
+          })
+          .catch(err => {
+            commit("SET_INFO", "Error: " + err.message);
+          });
+      }
+    },
+    async loadParkingUsages({ commit }, selectedParking) {
+      if (selectedParking) {
+        axios
+          .get("api/usage/parking/" + selectedParking)
+          .then(response => {
+            commit("SET_PARKING_USAGES", response.data);
           })
           .catch(err => {
             commit("SET_INFO", "Error: " + err.message);
@@ -169,11 +234,11 @@ export default new Vuex.Store({
       }
       if (user) {
         axios
-          .get("api/usage/user/" + user)
+          .get("api/day/user/" + user)
           .then(response => {
             commit("SET_CURRENT_USER_USAGES", response.data);
             if (!state.selectedSite && response.data && response.data.length > 0) {
-              dispatch("changeSelectedSite", response.data[0].site);
+              dispatch("changeSelectedSite", response.data[0].siteId);
             }
           })
           .catch(err => {
@@ -183,10 +248,10 @@ export default new Vuex.Store({
     },
     async saveCurrentUserUsages({ commit, dispatch, state }, usages) {
       axios
-        .post("api/workingDays", usages)
+        .post("api/day", usages)
         .then(response => {
-          commit("SET_CURRENT_USER_USAGES", response.data.workingDays);
-          commit("SET_INFO", "working days updated");
+          commit("SET_CURRENT_USER_USAGES", response.data.userDays);
+          dispatch("setInfo", "working days updated");
           dispatch("loadSiteUsages", state.selectedSite);
         })
         .catch(err => {
@@ -195,10 +260,10 @@ export default new Vuex.Store({
     },
     async deleteCurrentUserUsages({ commit, dispatch, state }, usages) {
       axios
-        .post("api/workingDays/delete", usages)
+        .post("api/day/delete", usages)
         .then(response => {
-          commit("SET_CURRENT_USER_USAGES", response.data.workingDays);
-          commit("SET_INFO", "working days updated");
+          commit("SET_CURRENT_USER_USAGES", response.data.userDays);
+          dispatch("setInfo", "working days updated");
           dispatch("loadSiteUsages", state.selectedSite);
         })
         .catch(err => {
@@ -220,29 +285,30 @@ export default new Vuex.Store({
         .post("api/role/all", { userRoles })
         .then(response => {
           commit("SET_USER_ROLES", response.data.userRoles);
-          commit("SET_INFO", "User roles saved");
+          this.dispatch("setInfo", "User roles saved");
         })
         .catch(err => {
           commit("SET_INFO", "Error: " + err.message);
         });
     },
     async reloadAll({ dispatch }) {
-      dispatch("getUserInfo");
       dispatch("loadSettings");
-      dispatch("loadRestaurants");
+
       dispatch("loadSites");
+      dispatch("loadRestaurants");
+      dispatch("loadParkings");
       dispatch("loadSiteUsages");
-      dispatch("loadCurrentUserUsages");
+      dispatch("loadRestaurantUsages");
+      dispatch("loadParkingUsages");
+
+      dispatch("getUserInfo");
     }
   },
   getters: {
     hue: state => state.hue,
-    user: state => state.user,
-    overridenUser: state => state.overridenUser,
-    currentUser: state => (state.overridenUser != null ? state.overridenUser : state.user.login),
     settings: state => state.settings,
-    userName: state => state.userName,
     info: state => state.info,
+
     sites: state => state.sites,
     siteDefinitions: state => {
       let defs = [];
@@ -253,6 +319,10 @@ export default new Vuex.Store({
       }
       return defs;
     },
+    siteUsages: state => state.siteUsages,
+    selectedSite: state => state.selectedSite,
+
+    restaurants: state => state.restaurants,
     restaurantDefinitions: state => {
       let defs = [];
       if (state.restaurants) {
@@ -262,10 +332,26 @@ export default new Vuex.Store({
       }
       return defs;
     },
-    restaurants: state => state.restaurants,
-    selectedSite: state => state.selectedSite,
+    restaurantUsages: state => state.restaurantUsages,
     selectedRestaurant: state => state.selectedRestaurant,
-    siteUsages: state => state.siteUsages,
+
+    parkings: state => state.parkings,
+    parkingDefinitions: state => {
+      let defs = [];
+      if (state.parkings) {
+        for (let parking of state.parkings) {
+          defs.push(parking.definition);
+        }
+      }
+      return defs;
+    },
+    parkingUsages: state => state.parkingUsages,
+    selectedParking: state => state.selectedParking,
+
+    user: state => state.user,
+    userName: state => state.userName,
+    overridenUser: state => state.overridenUser,
+    currentUser: state => (state.overridenUser != null ? state.overridenUser : state.user.login),
     userRoles: state => state.userRoles,
     currentUserUsages: state => state.currentUserUsages
   },

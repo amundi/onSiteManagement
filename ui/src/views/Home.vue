@@ -21,11 +21,16 @@
           <CalendarEditor :startOfMonth="startOfMonth"></CalendarEditor>
         </div>
       </div>
+      <div class="booking-panel-wrapper">
+        <BookingPanel></BookingPanel>
+      </div>
     </div>
     <div class="right-panel select-none overflow-y-auto">
-      <div class="title"><font-awesome-icon icon="building"></font-awesome-icon>&nbsp;Site</div>
+      <div class="title">
+        <font-awesome-icon icon="building"></font-awesome-icon>&nbsp;My site
+      </div>
       <v-select
-        :value="selectedSite"
+        :value="getObj(siteDefinitions, selectedSite)"
         :options="siteDefinitions"
         label="name"
         @input="setSelectedSite"
@@ -33,12 +38,46 @@
         <template #option="option">
           <h3 style="margin: 0">{{ option.name }}</h3>
           <div class="description">{{ option.description }}</div>
-          <div class="tag">{{ option.path }}</div>
+          <div class="tag">{{ option.tags }}</div>
         </template>
       </v-select>
-      <div class="booking-panel-wrapper">
-        <BookingPanel></BookingPanel>
-      </div>
+
+      <template v-if="getSettingProperty('manageRestaurants')">
+        <div class="title">
+          <font-awesome-icon icon="utensils"></font-awesome-icon>&nbsp;My restaurant
+        </div>
+        <v-select
+          :value="getObj(restaurantDefinitions, selectedRestaurant)"
+          :options="restaurantDefinitions"
+          label="name"
+          @input="setSelectedRestaurant"
+        >
+          <template #option="option">
+            <h3 style="margin: 0">{{ option.name }}</h3>
+            <div class="description">{{ option.description }}</div>
+            <div class="tag">{{ option.tags }}</div>
+          </template>
+        </v-select>
+      </template>
+
+      <template v-if="getSettingProperty('manageParkings')">
+        <div class="title">
+          <font-awesome-icon icon="parking"></font-awesome-icon>&nbsp;My parking
+        </div>
+        <v-select
+          :value="getObj(parkingDefinitions, selectedParking)"
+          :options="parkingDefinitions"
+          label="name"
+          @input="setSelectedParking"
+        >
+          <template #option="option">
+            <h3 style="margin: 0">{{ option.name }}</h3>
+            <div class="description">{{ option.description }}</div>
+            <div class="tag">{{ option.tags }}</div>
+          </template>
+        </v-select>
+      </template>
+
     </div>
   </div>
 </template>
@@ -59,7 +98,19 @@ export default {
     BookingPanel
   },
   computed: {
-    ...mapGetters(["hue", "siteDefinitions", "selectedSite", "siteUsages"]),
+    ...mapGetters([
+      "hue",
+      "settings",
+      "siteDefinitions",
+      "restaurantDefinitions",
+      "parkingDefinitions",
+      "selectedSite",
+      "selectedRestaurant",
+      "selectedParking",
+      "siteUsages",
+      "restaurantUsages",
+      "parkingUsages"
+    ]),
     startsOfMonth() {
       let startsOfMonth = [];
       for (let siteUsage of this.siteUsages) {
@@ -76,7 +127,14 @@ export default {
   },
   watch: {
     siteDefinitions(val) {
-      this.updateListSites(val);
+      if (val && this.selectedSite) {
+        this.checkDefaults(this.getObj(val, this.selectedSite));
+      }
+    },
+    selectedSite(val) {
+      if (val && this.siteDefinitions) {
+        this.checkDefaults(this.getObj(this.siteDefinitions, val));
+      }
     }
   },
   data() {
@@ -84,25 +142,50 @@ export default {
       listSites: null
     };
   },
-  beforeMount() {
-    if (this.siteDefinitions) {
-      this.updateListSites(this.siteDefinitions);
-    }
-  },
   methods: {
-    updateListSites(sites) {
-      if (sites) {
-        this.listSites = [];
-        sites.forEach(site => {
-          this.listSites.push({
-            code: site.id,
-            label: site.name
-          });
-        });
+    getObj(defs, id) {
+      if (defs) {
+        for (let d of defs) {
+          if (d.id === id) {
+            return d;
+          }
+        }
+      }
+      return null;
+    },
+    getSettingProperty(prop) {
+      if (this.settings) {
+        for (let setting of this.settings) {
+          if (setting.key == prop) {
+            return setting.value == "true";
+          }
+        }
+      }
+      return false;
+    },
+    checkDefaults(site) {
+      let vm = this;
+      if (vm.selectedRestaurant == null && site.defaultRestaurant) {
+        vm.setSelectedRestaurant(site.defaultRestaurant);
+      }
+      if (vm.selectedParking == null && site.defaultParking) {
+        vm.setSelectedParking(site.defaultParking);
       }
     },
     setSelectedSite(val) {
-      store.dispatch("changeSelectedSite", val);
+      if (val) {
+        store.dispatch("changeSelectedSite", val.id);
+      }
+    },
+    setSelectedRestaurant(val) {
+      if (val) {
+        store.dispatch("changeSelectedRestaurant", val.id);
+      }
+    },
+    setSelectedParking(val) {
+      if (val) {
+        store.dispatch("changeSelectedParking", val.id);
+      }
     }
   }
 };
@@ -112,6 +195,7 @@ export default {
 .home {
   &.dark {
     .center-panel {
+      background: linear-gradient(60deg, #1d1d1d 0%, #191919 35%, #111b1f 100%);
       .no-info {
         .main {
           background-color: #313131;
@@ -123,14 +207,14 @@ export default {
           }
         }
       }
-      .months {
-        background-color: #1d1d1d;
-      }
     }
     .right-panel {
       border-color: #464646;
       .title {
-        border-bottom: 1px solid #464646;
+        color: #5eb1cc;
+      }
+      .v-select {
+        color: #464646;
       }
     }
 
@@ -143,23 +227,23 @@ export default {
     .center-panel {
       .no-info {
         .main {
-          background-color: #ececec;
+          background-color: #bad8e6;
           .onsite {
             color: #00b6ed;
           }
           .arrow-right {
-            border-left: 20px solid #ececec;
+            border-left: 20px solid #bad8e6;
           }
         }
-      }
-      .months {
-        background-color: #f5f5f5;
       }
     }
     .right-panel {
       border-color: #cacaca;
       .title {
-        border-bottom: 1px solid #cacaca;
+        color: #11a3d2;
+      }
+      .v-select {
+        color: #e0e5e6;
       }
     }
 
@@ -219,25 +303,35 @@ export default {
 
     .months {
       height: 100vh;
-      padding: 150px 0px 10px 0px;
+      padding: 150px 0px 300px 0px;
       overflow-y: auto;
     }
   }
 
   .right-panel {
     width: 350px;
-    margin-top: 100px;
+    padding-top: 150px;
     border-left: 1px solid;
     .title {
       text-align: left;
-      padding: 5px 10px;
+      padding: 5px 10px 0 15px;
       font-size: 0.8rem;
-      font-weight: bold;
-      margin-bottom: 15px;
+      svg {
+        font-size: 3rem;
+        margin-left: -25px;
+        transform: rotate(25deg);
+        opacity: 0.27;
+      }
     }
     .v-select {
       margin-left: 15px;
+      margin-bottom: 35px;
       font-size: 0.9rem;
+      ::v-deep .vs__dropdown-toggle {
+        border-radius: 0;
+        border: none;
+        border-bottom: 1px solid;
+      }
     }
   }
 }

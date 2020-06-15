@@ -4,6 +4,7 @@ import Home from "@/views/Home.vue";
 import Settings from "@/views/Settings.vue";
 import Sites from "@/views/Sites.vue";
 import Restaurants from "@/views/Restaurants.vue";
+import Parkings from "@/views/Parkings.vue";
 import Reports from "@/views/Reports.vue";
 import Denied from "@/views/Denied.vue";
 import store from "../store/index";
@@ -35,6 +36,11 @@ const routes = [
     path: "/restaurants",
     name: "Restaurants",
     component: Restaurants
+  },
+  {
+    path: "/parkings",
+    name: "Parkings",
+    component: Parkings
   },
   {
     path: "/reports",
